@@ -8,7 +8,7 @@ use Digest::MD5;
 use URI;
 use URI::Find;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 __PACKAGE__->mk_classdata('_session');
 __PACKAGE__->mk_accessors('sessionid');
@@ -99,13 +99,19 @@ sub session {
 =cut
 
 sub setup {
-    my $self = shift;
+    my $self               = shift;
+    my $cache_root         = $self->config->{cache_root} || '/tmp';
+    my $default_expires_in = $self->config->{default_expires_in}
+      || 60 * 60 * 24;
+    my $auto_purge_interval = $self->config->{auto_purge_interval}
+      || 60 * 60 * 24;
+    my $auto_purge_on_set = $self->config->{auto_purge_on_set} || 1;
     $self->_session(
         Cache::FastMmap->new(
-            cache_root          => '/tmp',
-            default_expires_in  => 60 * 60 * 24,
-            auto_purge_interval => 60 * 60 * 24,
-            auto_purge_on_set   => 1
+            cache_root          => $cache_root,
+            default_expires_in  => $default_expires_in,
+            auto_purge_interval => $auto_purge_interval,
+            auto_purge_on_set   => $auto_purge_on_set
         )
     );
     return $self->NEXT::setup(@_);
