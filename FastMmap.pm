@@ -8,7 +8,7 @@ use Digest::MD5;
 use URI;
 use URI::Find;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 __PACKAGE__->mk_classdata('_session');
 __PACKAGE__->mk_accessors('sessionid');
@@ -127,7 +127,9 @@ sub uri {
     my ( $c, $uri ) = @_;
     if ( my $sid = $c->sessionid ) {
         $uri = URI->new($uri);
-        $uri->path( $uri->path . "/-/$sid" );
+        my $path = $uri->path;
+        $path .= '/' unless $path =~ /\/$/;
+        $uri->path( $path . "-/$sid" );
         return $uri->as_string;
     }
     return $uri;
