@@ -1,0 +1,19 @@
+Revision history for Perl extension Catalyst::Plugin::Session::FastMmap.
+
+0.06  Wed Mar 09 00:48:00 2005
+        - Added option for disabling url rewrite
+        - Documented config options
+0.05  Tue Mar 08 12:39:00 2005
+        - fix bug with old sessions after server restart.
+        -  Fixed useless warning on missing output
+0.04  Wed Feb 16 22:00:00 2005
+        - added tempdir support (Marcus Ramberg)
+
+0.03  Wed Feb 16 22:00:00 2005
+        - added config parameters (Marcus Ramberg)
+
+0.02  Tue Feb 01 02:00:00 2005
+        - better url rewriting
+
+0.01  Fri Jan 28 22:00:00 2005
+        - first release
