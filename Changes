@@ -1,5 +1,8 @@
 Revision history for Perl extension Catalyst::Plugin::Session::FastMmap.
 
+0.04  Wed Feb 16 22:00:00 2005
+        - added tempdir support (Marcus Ramberg)
+
 0.03  Wed Feb 16 22:00:00 2005
         - added config parameters (Marcus Ramberg)
 

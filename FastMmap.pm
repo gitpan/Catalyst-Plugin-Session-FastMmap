@@ -7,8 +7,9 @@ use Cache::FastMmap;
 use Digest::MD5;
 use URI;
 use URI::Find;
+use File::Temp 'tempdir';
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 __PACKAGE__->mk_classdata('_session');
 __PACKAGE__->mk_accessors('sessionid');
@@ -100,7 +101,7 @@ sub session {
 
 sub setup {
     my $self               = shift;
-    my $cache_root         = $self->config->{cache_root} || '/tmp';
+    my $cache_root         = $self->config->{cache_root} || tempdir;
     my $default_expires_in = $self->config->{default_expires_in}
       || 60 * 60 * 24;
     my $auto_purge_interval = $self->config->{auto_purge_interval}

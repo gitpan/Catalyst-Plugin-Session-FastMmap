@@ -10,7 +10,8 @@ WriteMakefile(
         Class::Data::Inheritable => 0,
         Digest::MD5              => 0,
         URI                      => 0,
-        URI::Find                => 0
+        URI::Find                => 0,
+        File::Temp               => 0
     },
     VERSION_FROM => 'FastMmap.pm'
 );
