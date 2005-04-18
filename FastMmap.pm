@@ -9,7 +9,7 @@ use URI;
 use URI::Find;
 use File::Temp 'tempdir';
 
-our $VERSION = '0.07';
+our $VERSION = '0.09';
 
 __PACKAGE__->mk_classdata('_session');
 __PACKAGE__->mk_accessors('sessionid');
@@ -21,6 +21,12 @@ Catalyst::Plugin::Session::FastMmap - FastMmap sessions for Catalyst
 =head1 SYNOPSIS
 
     use Catalyst 'Session::FastMmap';
+    
+    MyApp->config->{session} = {
+        expires => 3600,
+        rewrite => 1,
+        storage => '/tmp/session'
+    };
 
     $c->session->{foo} = 'bar';
     print $c->sessionid;
@@ -36,8 +42,8 @@ Fast sessions.
 =cut
 
 sub finalize {
-    my $c        = shift;
-    unless ($c->config->{no_url_rewrite}) {
+    my $c = shift;
+    if ( $c->config->{session}->{rewrite} ) {
         my $redirect = $c->response->redirect;
         $c->response->redirect( $c->uri($redirect) ) if $redirect;
     }
@@ -48,17 +54,17 @@ sub finalize {
             $set = 0 if $cookie->value eq $sid;
         }
         $c->response->cookies->{session} = { value => $sid } if $set;
-        unless ($c->config->{no_url_rewrite}) {
-          my $finder = URI::Find->new(
-              sub {
-                  my ( $uri, $orig ) = @_;
-                  my $base = $c->request->base;
-                  return $orig unless $orig =~ /^$base/;
-                  return $orig if $uri->path =~ /\/-\//;
-                  return $c->uri($orig);
-             }
-          );
-          $finder->find( \$c->res->{output} ) if $c->res->output;
+        if ( $c->config->{session}->{rewrite} ) {
+            my $finder = URI::Find->new(
+                sub {
+                    my ( $uri, $orig ) = @_;
+                    my $base = $c->request->base;
+                    return $orig unless $orig =~ /^$base/;
+                    return $orig if $uri->path =~ /\/-\//;
+                    return $c->uri($orig);
+                }
+            );
+            $finder->find( \$c->res->{body} ) if $c->res->body;
         }
     }
     return $c->NEXT::finalize(@_);
@@ -107,21 +113,18 @@ sub session {
 =cut
 
 sub setup {
-    my $self               = shift;
-    my $cache_root         = $self->config->{cache_root} || tempdir;
-    my $default_expires_in = $self->config->{default_expires_in}
-      || 60 * 60 * 24;
-    my $auto_purge_interval = $self->config->{auto_purge_interval}
-      || 60 * 60 * 24;
-    my $auto_purge_on_set = $self->config->{auto_purge_on_set} || 1;
+    my $self = shift;
+    $self->config->{session}->{storage} ||= '/tmp/session';
+    $self->config->{session}->{expires} ||= 60 * 60 * 24;
+    $self->config->{session}->{rewrite} ||= 0;
+
     $self->_session(
         Cache::FastMmap->new(
-            cache_root          => $cache_root,
-            default_expires_in  => $default_expires_in,
-            auto_purge_interval => $auto_purge_interval,
-            auto_purge_on_set   => $auto_purge_on_set
+            share_file  => $self->config->{session}->{storage},
+            expire_time => $self->config->{session}->{expires}
         )
     );
+
     return $self->NEXT::setup(@_);
 }
 
@@ -151,29 +154,17 @@ sub uri {
 
 =head2 CONFIG OPTIONS
 
-=head3 no_url_rewrite
+=head3 rewrite
 
-To disable automatic storing of sessions in the url, 
-you can disable the url rewriting for session by setting 
-this to a true value.
+To enable automatic storing of sessions in the url set this to a true value.
 
-=head3 cache_root
+=head3 storage
 
-The root directory for the session cache. defaults to a
-tempdir.
+File to mmap for sharing of data, defaults to /tmp/session.
 
-=head3 default_expires_in
+=head3 expires
 
 how many seconds until the session expires. defaults to 1 day
-
-=head3 auto_purge_interval
-
-How often should the system purge sessions. Defaults to 1 time
-per day.
-
-=head3 auto_purge_on_set
-
-Is auto purge enabled? defaults to true.
 
 =head1 SEE ALSO
 
@@ -186,8 +177,8 @@ Marcus Ramberg C<mramberg@cpan.org>
 
 =head1 COPYRIGHT
 
-This program is free software, you can redistribute it and/or modify it under
-the same terms as Perl itself.
+This program is free software, you can redistribute it and/or modify it
+under the same terms as Perl itself.
 
 =cut
 
