@@ -1,5 +1,7 @@
 Revision history for Perl extension Catalyst::Plugin::Session::FastMmap.
 
+0.10 Mon May 23 22:35:41 EDT 2005
+        - expire cookie at same time as session (Jesse Sheidlower)
 0.09  Mon Apr 18 22:00:00 2005
         - s/output/body/ (Frank Wiegand)
 

@@ -9,7 +9,7 @@ use URI;
 use URI::Find;
 use File::Temp 'tempdir';
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 __PACKAGE__->mk_classdata('_session');
 __PACKAGE__->mk_accessors('sessionid');
@@ -53,7 +53,12 @@ sub finalize {
         if ( my $cookie = $c->request->cookies->{session} ) {
             $set = 0 if $cookie->value eq $sid;
         }
-        $c->response->cookies->{session} = { value => $sid } if $set;
+        if ( $set ) {
+            $c->response->cookies->{session} = { 
+                value   => $sid, 
+                expires => $c->config->{session}->{expires}
+            };
+        }
         if ( $c->config->{session}->{rewrite} ) {
             my $finder = URI::Find->new(
                 sub {
