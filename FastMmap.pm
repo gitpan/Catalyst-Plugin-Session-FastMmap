@@ -9,7 +9,7 @@ use URI;
 use URI::Find;
 use File::Temp 'tempdir';
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 __PACKAGE__->mk_classdata('_session');
 __PACKAGE__->mk_accessors('sessionid');
@@ -56,7 +56,7 @@ sub finalize {
         if ( $set ) {
             $c->response->cookies->{session} = { 
                 value   => $sid, 
-                expires => $c->config->{session}->{expires}
+                expires => $c->config->{session}->{expires} . 's'
             };
         }
         if ( $c->config->{session}->{rewrite} ) {
@@ -120,7 +120,7 @@ sub session {
 sub setup {
     my $self = shift;
     $self->config->{session}->{storage} ||= '/tmp/session';
-    $self->config->{session}->{expires} ||= 60 * 60 * 24;
+    $self->config->{session}->{expires} ||= '1d';
     $self->config->{session}->{rewrite} ||= 0;
 
     $self->_session(
