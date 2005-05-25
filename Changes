@@ -1,5 +1,8 @@
 Revision history for Perl extension Catalyst::Plugin::Session::FastMmap.
 
+0.12 Thu May 26 00:37:00 EDT 2005
+        - Seconds it should be.
+
 0.11 Thu May 26 00:00:00 EDT 2005
         - Fixed expire bug
 
