@@ -1,5 +1,12 @@
 Revision history for Perl extension Catalyst::Plugin::Session::FastMmap.
 
+0.13 Tue Feb 09 03:12:00 GMT 2010
+        - Deprecation notice added.
+        - Fix C3 merge errors (RT#49058)
+        - Change from NEXT to MRO::Compat
+        - Remove cookie expiriation since it introduced a bug.
+        - expanded documentation
+
 0.12 Thu May 26 00:37:00 EDT 2005
         - Seconds it should be.
 

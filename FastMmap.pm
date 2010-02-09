@@ -1,22 +1,30 @@
 package Catalyst::Plugin::Session::FastMmap;
 
 use strict;
-use base qw/Class::Data::Inheritable Class::Accessor::Fast/;
-use NEXT;
+use base qw/Class::Accessor::Fast Class::Data::Inheritable/;
+use MRO::Compat;
 use Cache::FastMmap;
 use Digest::MD5;
 use URI;
 use URI::Find;
 use File::Temp 'tempdir';
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 __PACKAGE__->mk_classdata('_session');
 __PACKAGE__->mk_accessors('sessionid');
 
 =head1 NAME
 
-Catalyst::Plugin::Session::FastMmap - FastMmap sessions for Catalyst
+Catalyst::Plugin::Session::FastMmap - [DEPRECATED] FastMmap sessions for Catalyst
+
+=head1 DEPRECATION
+
+Note that this module is deprecated in favor of L<Catalyst::Plugin::Session>.
+
+It works under Catalyst 5.5, but might not work in future versions. Using
+L<Catalyst::Plugin::Session> should be a small change, since the API is mostly
+backwards compatible.
 
 =head1 SYNOPSIS
 
@@ -33,11 +41,16 @@ Catalyst::Plugin::Session::FastMmap - FastMmap sessions for Catalyst
 
 =head1 DESCRIPTION
 
-Fast sessions.
+C<Catalyst::Plugin::Session::FastMmap> is a fast session plugin for
+Catalyst that uses an mmap'ed file to act as a shared memory
+interprocess cache.  It is based on C<Cache::FastMMap>.
+
 
 =head2 EXTENDED METHODS
 
-=head3 finalize
+=over 4
+
+=item finalize
 
 =cut
 
@@ -55,8 +68,7 @@ sub finalize {
         }
         if ( $set ) {
             $c->response->cookies->{session} = { 
-                value   => $sid, 
-                expires => '+' . $c->config->{session}->{expires} . 's'
+                value => $sid
             };
         }
         if ( $c->config->{session}->{rewrite} ) {
@@ -75,7 +87,7 @@ sub finalize {
     return $c->NEXT::finalize(@_);
 }
 
-=head3 prepare_action
+=item prepare_action
 
 =cut
 
@@ -84,7 +96,6 @@ sub prepare_action {
     if ( $c->request->path =~ /^(.*)\/\-\/(.+)$/ ) {
         $c->request->path($1);
         $c->sessionid($2);
-        $c->log->debug(qq/Found sessionid "$2" in path/) if $c->debug;
     }
     if ( my $cookie = $c->request->cookies->{session} ) {
         my $sid = $cookie->value;
@@ -113,7 +124,9 @@ sub session {
     }
 }
 
-=head3 setup
+=item setup
+
+Sets up the session cache file.
 
 =cut
 
@@ -133,11 +146,15 @@ sub setup {
     return $self->NEXT::setup(@_);
 }
 
+=back
+
 =head2 METHODS
 
-=head3 session
+=over 4
 
-=head3 uri
+=item session
+
+=item uri
 
 Extends an uri with session id if needed.
 
@@ -157,28 +174,46 @@ sub uri {
     return $uri;
 }
 
+=back
+
 =head2 CONFIG OPTIONS
 
-=head3 rewrite
+=over 4
 
-To enable automatic storing of sessions in the url set this to a true value.
+=item rewrite
 
-=head3 storage
+If set to a true value sessions are automatically stored in the url;
+defaults to false.
 
-File to mmap for sharing of data, defaults to /tmp/session.
+=item storage
 
-=head3 expires
+Specifies the file to be used for the sharing of session data;
+defaults to C</tmp/session>. 
 
-how many seconds until the session expires. defaults to 1 day
+Note that the file will be created with mode 0640, which means that it
+will only be writeable by processes running with the same uid as the
+process that creates the file.  If this may be a problem, for example
+if you may try to debug the program as one user and run it as another,
+specify a filename like C<< /tmp/session-$> >>, which includes the
+UID of the process in the filename.
+
+
+=item expires
+
+Specifies the session expiry time in seconds; defaults to 86,400,
+i.e. one day.
+
+=back
 
 =head1 SEE ALSO
 
-L<Catalyst> L<Cache::FastMmap>.
+L<Catalyst>, L<Cache::FastMmap>, L<Catalyst::Plugin::Session>.
 
 =head1 AUTHOR
 
-Sebastian Riedel, C<sri@cpan.org>
-Marcus Ramberg C<mramberg@cpan.org>
+Sebastian Riedel E<lt>C<sri@cpan.org>E<gt>,
+Marcus Ramberg E<lt>C<mramberg@cpan.org>E<gt>,
+Andrew Ford E<lt>C<andrewf@cpan.org>E<gt>
 
 =head1 COPYRIGHT
 
